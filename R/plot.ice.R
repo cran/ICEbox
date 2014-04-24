@@ -1,8 +1,9 @@
 plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_orig_pts_preds = TRUE, pts_preds_size = 1.5,
-					colorvec, color_by = NULL, x_quantile = FALSE, plot_pdp = TRUE,
-					centered = FALSE, rug = TRUE, prop_range_y = TRUE, centered_percentile = 0.01, ...){
+					colorvec, color_by = NULL, x_quantile = FALSE, plot_pdp = TRUE,centered = FALSE, 
+					prop_range_y = TRUE, rug_quantile = seq(from = 0, to = 1, by = 0.1), 
+					centered_percentile = 0.01, prop_type="sd",...){
 	
-	DEFAULT_COLORVEC = c("green", "red", "blue", "black", "green", "yellow", "pink", "orange", "forestgreen", "grey")
+	DEFAULT_COLORVEC = c("firebrick3", "dodgerblue3", "gold1", "darkorchid4", "orange4", "forestgreen", "grey", "black")
 	#think of x as x. needs to be 'x' to match R's generic.
 
 	#list of passed arguments, including the ...
@@ -15,6 +16,10 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_orig_pts_preds
 	if (frac_to_plot <= 0 || frac_to_plot > 1 ){
 		stop("frac_to_plot must be in (0,1]")
 	}
+	if(!(prop_type %in% c("sd","range"))){
+		stop("prop_type must be either 'sd' or 'range'")
+	}
+
 	#extract the grid and lines to plot	
 	grid = x$gridpts 
 	n_grid = length(grid)
@@ -30,7 +35,8 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_orig_pts_preds
 	legend_text = NULL #default is no legend.
 	#case 1: random
 	if (missing(colorvec) && missing(color_by)){
-		colorvec = sort(rgb(runif(N, 0, 0.7), runif(N, 0, 0.7), runif(N, 0, 0.7)))
+		#we're going to choose dark grey and randomly alpha the lines
+		colorvec = sort(rgb(rep(0.4, N), rep(0.4, N), rep(0.4, N), runif(N, 0.4, 0.8)))
 	} 
 	#case 2: both colorvec and color_by specified, so print a warning but use colorvec.
 	if (!missing(colorvec) && !missing(color_by)){
@@ -123,7 +129,7 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_orig_pts_preds
 	#get the xlabel if it wasn't already passed explicitly.
 	if( is.null(arg_list$xlab)){
 		xlab = x$xlab
-    arg_list = modifyList(arg_list, list(xlab = xlab))
+    	arg_list = modifyList(arg_list, list(xlab = xlab))
 	}
 	if (x_quantile){
 		xlab = paste("quantile(", xlab, ")", sep = "")
@@ -169,15 +175,20 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_orig_pts_preds
   
   
 	if (x$nominal_axis){
-		axis(1, at = sort(x$xj), labels = sort(x$xj))
+		axis(1, at = sort(x$xj), labels = sort(x$xj), cex.axis = arg_list$cex.axis)
 	}	
 	if (centered && prop_range_y){
 		at = seq(min(ice_curves), max(ice_curves), length.out = 5)
 		#we need to organize it so it's at zero
 		at = at - min(abs(at))
 		
-		labels = round(at / x$range_y, 2)
-		axis(4, at = at, labels = labels)
+		#check prop type.
+		if(prop_type == "range"){
+			labels = round(at / x$range_y, 2)  #as a fraction of range of y
+		}else{
+			labels = round(at / x$sd_y, 2)     #as a fraction of sd(y)
+		}
+		axis(4, at = at, labels = labels, cex.axis = arg_list$cex.axis)
 	}
 	
 	for (i in 1 : nrow(ice_curves)){
@@ -196,14 +207,14 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_orig_pts_preds
 			xj = x$xj[plot_points_indices]
 		}
 		for (i in 1 : length(xj)){
-			points(xj[i], yhat_actual[i], col = "black", pch = 16, cex = pts_preds_size)
-			points(xj[i], yhat_actual[i], col = colorvec[i], pch = 16)
+			points(xj[i], yhat_actual[i], col = rgb(0.1, 0.1, 0.1), pch = 16, cex = pts_preds_size)
+			points(xj[i], yhat_actual[i], col = colorvec[i], pch = 16, cex = round(pts_preds_size * 0.7))
 		}
 	}
 	
-	if (rug && !x_quantile){
-		rug(x$xj)	
-	}	
+	if (!is.null(rug_quantile) && !x_quantile){
+		axis(side = 1, line = -0.1, at = quantile(x$xj, rug_quantile), lwd = 0, tick = T, tcl = 0.4, lwd.ticks = 2, col.ticks = "blue4", labels = FALSE, cex.axis = arg_list$cex.axis)
+	}
 	
 	#if plot_pdp is true, plot actual pdp (in the sense of Friedman '01)
 	#Ensure this is done after all other plotting so nothing obfuscates the PDP

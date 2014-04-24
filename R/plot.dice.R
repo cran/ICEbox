@@ -1,8 +1,10 @@
 plot.dice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_sd = TRUE, plot_orig_pts_deriv = TRUE,
  						pts_preds_size = 1.5, colorvec, color_by = NULL, x_quantile = FALSE, plot_dpdp = TRUE, 
-						rug = TRUE, ...){
+						rug_quantile = seq(from = 0, to = 1, by = 0.1), ...){
 	#think of x as 'dice_obj'
-	DEFAULT_COLORVEC = c("green", "red", "blue", "black", "green", "yellow", "pink", "orange", "forestgreen", "grey")
+	
+	DEFAULT_COLORVEC = c("firebrick3", "dodgerblue3", "gold1", "darkorchid4", "orange4", "forestgreen", "grey", "black")
+	
 	arg_list = list(...)
 
 	#list of passed arguments, including the ...
@@ -34,7 +36,7 @@ plot.dice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_sd = TRUE, pl
 	legend_text = NULL #default is no legend.
 	#case 1: random
 	if (missing(colorvec) && missing(color_by)){
-		colorvec = sort(rgb(runif(N, 0, 0.7), runif(N, 0, 0.7), runif(N, 0, 0.7)))
+		colorvec = sort(rgb(rep(0.4, N), rep(0.4, N), rep(0.4, N), runif(N, 0.4, 0.8)))
 	} 
 	#case 2: both colorvec and color_by specified, so print a warning but use colorvec.
 	if(!missing(colorvec) && !missing(color_by)){
@@ -175,7 +177,7 @@ plot.dice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_sd = TRUE, pl
   
   
 	if (x$nominal_axis){
-		axis(1, at = sort(x$xj), labels = sort(x$xj))
+		axis(1, at = sort(x$xj), labels = sort(x$xj), cex.axis = arg_list$cex.axis)
 	}	
 	
 	for (i in 1 : nrow(d_ice_curves)){
@@ -208,8 +210,9 @@ plot.dice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_sd = TRUE, pl
 		points(grid, friedman_dpdp, col = "BLACK", type = "l", lwd = 4)
 	}
 	
-	if (rug && !x_quantile){
-		rug(x$xj)	
+	if (!is.null(rug_quantile) && !x_quantile){
+		axis(side = 1, line = -0.1, at = quantile(x$xj, rug_quantile), lwd = 0, tick = T, tcl = 0.4, lwd.ticks = 2, col.ticks = "blue4", labels = FALSE,
+		     cex.axis = arg_list$cex.axis)
 	}
 
 	#do the sd plot if required.
@@ -217,9 +220,10 @@ plot.dice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_sd = TRUE, pl
 		abline(h = ylim[1] + offset, col = rgb(0.8,0.8,0.8))
 		at = seq(ylim[1], ylim[1] + max(x$sd_deriv), length.out = 2)	
 
-		labels = round(seq(0, max(x$sd_deriv), length.out = 2), 2)
-		axis(4, at = at, labels = labels)
-		mtext("sd(deriv)", side = 4,line = 0.5)
+		labels = round(seq(0, max(x$sd_deriv), length.out = 2), 1)
+		axis(4, at = at, labels = labels, cex.axis = arg_list$cex.axis)
+    print(arg_list$cex)
+		mtext("sd(deriv)", side = 4,line = 0.5, cex = arg_list$cex.lab)
 
 		points(x= grid, y = (x$sd_deriv+ylim[1]),type='l')
 	}

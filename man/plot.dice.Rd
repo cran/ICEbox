@@ -11,7 +11,7 @@ Plotting of \code{dice} objects.
 \method{plot}{dice}(x, plot_margin = 0.05, frac_to_plot = 1, 
       plot_sd = TRUE, plot_orig_pts_deriv = TRUE, pts_preds_size = 1.5, 
       colorvec, color_by = NULL, x_quantile = FALSE, plot_dpdp = TRUE, 
-      rug = TRUE, ...)
+      rug_quantile = seq(from = 0, to = 1, by = 0.1), ...)
 }
 \arguments{
   \item{x}{
@@ -51,9 +51,9 @@ the predictor's original scale is used.
   \item{plot_dpdp}{
 If \code{TRUE}, the estimated derivative of the PDP is plotted and highlighted in yellow.
 }
-  \item{rug}{
-If \code{TRUE}, marks are drawn on the x-axis indicating the presence of actual observed values.
-Forced to \code{FALSE} when \code{x_quantile} is set to \code{TRUE}.
+  \item{rug_quantile}{
+If not null, tick marks are drawn on the x-axis corresponding to the vector of quantiles specified by this parameter.
+Forced to \code{NULL} when \code{x_quantile} is set to \code{TRUE}.
 }
   \item{\dots}{
 Additional plotting arguments.
