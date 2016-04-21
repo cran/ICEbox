@@ -8,12 +8,14 @@ Plotting of \code{ice} objects.
 }
 \usage{
 \method{plot}{ice}(x, plot_margin = 0.05, frac_to_plot = 1, 
-	plot_orig_pts_preds = TRUE, 
+	 plot_points_indices = NULL, plot_orig_pts_preds = TRUE, 
      pts_preds_size = 1.5, colorvec, color_by = NULL, 
      x_quantile = FALSE, plot_pdp = TRUE,
      centered = FALSE, prop_range_y = TRUE, 
      rug_quantile = seq(from = 0, to = 1, by = 0.1),
-     centered_percentile = 0.01, prop_type,...)
+     centered_percentile = 0.01, 
+     point_labels = NULL, point_labels_size = NULL, 
+     prop_type,...)
 }
 
 \arguments{
@@ -27,6 +29,10 @@ Extra margin to pass to \code{ylim} as a fraction of the range of \code{x$ice_cu
 If \code{frac_to_plot} is less than 1, randomly plot \code{frac_to_plot} fraction of the
 curves in \code{x$ice_curves}.
 }
+  \item{plot_points_indices}{
+If not \code{NULL}, this plots only the indices of interest. If not \code{NULL}, \code{frac_to_plot} must be 1 otherwise
+an error is thrown. Default is \code{NULL}. 
+}
   \item{plot_orig_pts_preds}{
 If \code{TRUE}, marks each curve at the location of the observation's actual fitted value. If \code{FALSE},
 no mark is drawn.
@@ -38,7 +44,8 @@ Size of points to make if \code{plot_origin_pts_preds} is \code{TRUE}.
 Optional vector of colors to use for each curve.
 }
   \item{color_by}{
-Optional variable name (or column number) in \code{Xice} to color curves by. If the \code{color_by}
+Optional variable name in \code{Xice}, column number in \code{Xice}, or data vector of the correct length to color curves by. 
+If the \code{color_by}
 variable has 10 or fewer unique values, a discrete set of colors is used for each value and a legend is 
 printed and returned. If there are more values, curves are colored from light to dark corresponding 
 to low to high values of the variable specified by \code{color_by}.
@@ -64,8 +71,14 @@ centered values as a fraction of the range of the fitted values over the actual 
 The percentile of \code{predictor} for which all \code{ice_curves} are "pinched together" and set to be 0.
 Default is .01.
 }
+  \item{point_labels}{
+If not \code{NULL}, labels to plot next to each point. Default is \code{NULL}.
+}
+  \item{point_labels_size}{
+If not \code{NULL}, size of labels to plot next to each point. Default is \code{NULL} which means it's the size of \code{pts_preds_size}.  
+}
   \item{rug_quantile}{
-If not null, tick marks are drawn on the x-axis corresponding to the vector of quantiles specified by this parameter.
+If not \code{NULL}, tick marks are drawn on the x-axis corresponding to the vector of quantiles specified by this parameter.
 Forced to \code{NULL} when \code{x_quantile} is set to \code{TRUE}.
 }
 \item{prop_type}{
@@ -109,8 +122,8 @@ bhd.ice = ice(object = bhd_rf_mod, X = X, y = y, predictor = "age",
 plot(bhd.ice, x_quantile = TRUE, plot_pdp = TRUE, frac_to_plot = 1) 
 
 ## centered plot
-plot(bhd.ice, x_quantile = TRUE, plot_pdp = TRUE, frac_to_plot = 1
-            centered = TRUE) 
+plot(bhd.ice, x_quantile = TRUE, plot_pdp = TRUE, frac_to_plot = 1, 
+		centered = TRUE) 
 
 ## color the curves by high and low values of 'rm'.
 # First create an indicator variable which is 1 if the number of 
@@ -120,5 +133,9 @@ bhd.ice$Xice$I_rm = ifelse(bhd.ice$Xice$rm > median_rm, 1, 0)
 
 plot(bhd.ice, frac_to_plot = 1, centered = TRUE, prop_range_y = TRUE,  
             x_quantile = T, plot_orig_pts_preds = T, color_by = "I_rm")
+bhd.ice = ice(object = bhd_rf_mod, X = X, y = y, predictor = "age",
+            frac_to_build = 1)             
+plot(bhd.ice, frac_to_plot = 1, centered = TRUE, prop_range_y = TRUE,  
+            x_quantile = T, plot_orig_pts_preds = T, color_by = y)            
 }
 }
