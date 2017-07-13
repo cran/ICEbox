@@ -1,10 +1,10 @@
-d48f89748f3ee2d80465f91857f1eab9 *DESCRIPTION
+745b1bea04ed711776439f06b3cedb9c *DESCRIPTION
 aee5c6f0b350253fc29adb297c18dd5c *NAMESPACE
 86f006256064ffab5f3bba0ebd21658e *R/clusterICE.R
 92d5c12ff9d26954e0ca82956b91076a *R/dice.R
 24ca5d1ba8ecfd29ae656abb5d944ac7 *R/ice.R
 83089f99e74842fd2a7ac811b24077a4 *R/plot.dice.R
-39aea0239bb4f5bd3fd5b97b507fcd44 *R/plot.ice.R
+18ca869e45de8a7797d956eb46398514 *R/plot.ice.R
 524042269d15b675ef26c6375656bba5 *R/print.dice.R
 ef1d1438cc9f49d60fb3ec44e51f1693 *R/print.ice.R
 a8a3fbdce35dc7ec9dde5ee0ae67207f *R/summary.dice.R
