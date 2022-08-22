@@ -1,6 +1,6 @@
 plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_points_indices = NULL,
 					plot_orig_pts_preds = TRUE, pts_preds_size = 1.5,
-					colorvec, color_by = NULL, x_quantile = FALSE, plot_pdp = TRUE, centered = FALSE, 
+					colorvec, color_by = NULL, x_quantile = TRUE, plot_pdp = TRUE, centered = FALSE, 
 					prop_range_y = TRUE, rug_quantile = seq(from = 0, to = 1, by = 0.1), 
 					centered_percentile = 0, point_labels = NULL, point_labels_size = NULL,
 					prop_type = "sd", ...){
@@ -12,7 +12,7 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_points_indices
 	#arg_list = as.list(match.call(expand.dots = TRUE))
 
 	#some argument checking
-	if (class(x) != "ice"){ 
+	if (!inherits(x, "ice")){ 
 		stop("object is not of class \"ice\"")
 	}
 	if (frac_to_plot <= 0 || frac_to_plot > 1 ){
@@ -60,7 +60,7 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_points_indices
 		if(!(arg_type %in% c("character", "numeric", "factor"))){
 			stop("color_by must be a column name in X or a column index")
 		}
-		if(class(color_by) == "character"){
+		if(inherits(color_by, "character")){
 			if(!(color_by %in% names(x$Xice))){
 				stop("The predictor name given by color_by was not found in the X matrix")
 			}
@@ -124,14 +124,17 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_points_indices
 	
 	#pull out a fraction of the lines to plot
 	if (is.null(plot_points_indices)){
+		all_ice_curves = x$ice_curves #all
 		plot_points_indices = sample(1 : N, round(frac_to_plot * N))
+		ice_curves = ice_curves[plot_points_indices, ]
 	} else {
 		if (frac_to_plot < 1){
 			stop("frac_to_plot has to be 1 when plot_points_indices is passed to the plot function.")
 		}
+		ice_curves = ice_curves[plot_points_indices, ]
+		all_ice_curves = ice_curves
 	}
 	
-	ice_curves = ice_curves[plot_points_indices, ]
 	if (nrow(ice_curves) == 0){
 		stop("no rows selected: frac_to_plot too small.")
 	}
@@ -241,7 +244,7 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_points_indices
 		}
 		for (i in 1 : length(xj)){
 			points(xj[i], yhat_actual[i], col = rgb(0.1, 0.1, 0.1), pch = 16, cex = pts_preds_size)
-			points(xj[i], yhat_actual[i], col = colorvec[i], pch = 16, cex = round(pts_preds_size * 0.7))
+			points(xj[i], yhat_actual[i], col = colorvec[i], pch = 16, cex = pts_preds_size * 0.7)
 		}
 	}
 	
@@ -258,8 +261,9 @@ plot.ice = function(x, plot_margin = 0.05, frac_to_plot = 1, plot_points_indices
 	
 	#if plot_pdp is true, plot actual pdp (in the sense of Friedman '01)
 	#Ensure this is done after all other plotting so nothing obfuscates the PDP
+	pdp = NULL
 	if (plot_pdp){
-		pdp = apply(ice_curves, 2, mean) # pdp = average over the columns (we don't use the one from the ICE object since plot_points_indices may have been passed)
+		pdp = apply(all_ice_curves, 2, mean) # pdp = average over all the columns unless the user specifically specifies 
 		#cat("pdp has", nrow(ice_curves), "rows\n")
 		if (centered){
 #			ice_curves[, ceiling(ncol(ice_curves) * centered_percentile + 0.00001)]
